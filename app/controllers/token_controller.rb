@@ -43,7 +43,7 @@ class TokenController < ApplicationController
     user_token = $redis.keys("*:user")
     token = user_token.split(":")[0]
     $redis.del("#{token}:#{user}")
-    $redis.del("#{token}:#{token}")
+    $redis.del("token:#{token}")
   end
 
   def refresh_token
@@ -51,6 +51,9 @@ class TokenController < ApplicationController
     user_token = $redis.keys("*:user")
     token = user_token.split(":")[0]
     $redis.expire("#{token}:#{user}", 60)
+    if $redis.ttl("token:#{token}") < 60
+      $redis.expire("token:#{token}", 60)
+    end
   end
 
   private
